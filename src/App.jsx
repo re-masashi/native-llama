@@ -301,8 +301,8 @@ const Settings = () => {
   };
 
   // Start Ollama server (Note: This typically requires manual initiation)
-  const startOllama = () => {
-    invoke('start_ollama', {}).then(r=>alert(r))
+  const startOllama = async () => {
+    invoke('start_ollama', {})
   };
 
   // Stop Ollama server (Note: This typically requires manual termination)
