@@ -270,6 +270,7 @@ const Home = () => {
 };
 
 const Settings = () => {
+  const [activeTab, setActiveTab] = useState('ollama');
   const [isOllamaRunning, setIsOllamaRunning] = useState(false);
   const [models, setModels] = useState([]);
   const [apiKey, setApiKey] = useState(localStorage.getItem('OLLAMA_API_KEY') || '');
@@ -278,11 +279,7 @@ const Settings = () => {
   const checkOllamaStatus = async () => {
     try {
       const response = await fetch('http://localhost:11434/api/ps');
-      if (response.ok) {
-        setIsOllamaRunning(true);
-      } else {
-        setIsOllamaRunning(false);
-      }
+      setIsOllamaRunning(response.ok);
     } catch (error) {
       setIsOllamaRunning(false);
     }
@@ -305,10 +302,7 @@ const Settings = () => {
 
   // Start Ollama server (Note: This typically requires manual initiation)
   const startOllama = () => {
-    invoke('start_ollama', {})
-      .then(res=>{
-        alert('done'+res);
-      })
+    invoke('start_ollama', {}).then(r=>alert(r))
   };
 
   // Stop Ollama server (Note: This typically requires manual termination)
@@ -329,50 +323,108 @@ const Settings = () => {
 
   return (
     <div className="w-full py-3 flex flex-col items-center justify-center">
-      <div className="w-full bg-zinc-900/40 backdrop-blur-2xl bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-8 max-w-lg">
+      <div className="w-full h-full relative bg-zinc-900/40 backdrop-blur-2xl bg-opacity-10 backdrop-blur-lg rounded-xl shadow-lg p-8 max-w-lg">
         <h1 className="text-4xl font-bold text-white mb-4 text-center">Settings</h1>
         <hr className="border border-white/50 mb-6" />
 
-        {/* Ollama Server Status */}
-        <div className="mb-4">
-          <h2 className="text-xl font-bold text-white mb-2">Ollama Server Status</h2>
-          <p className={`text-lg ${isOllamaRunning ? 'text-green-200' : 'text-red-300'}`}>
-            {isOllamaRunning ? 'Running' : 'Not Running'}
-          </p>
+        {/* Tab Navigation */}
+        <div className="flex justify-center mb-6 bg-zinc-700/40 rounded-lg">
+          {['General', 'Ollama', 'Config', 'Performance'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab.toLowerCase())}
+              className={`mx-2 px-4 py-2 rounded-md outline-none transition duration-200 ${
+                activeTab === tab.toLowerCase()
+                  ? 'bg-white text-black'
+                  : ' text-white'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
         </div>
 
-        {/* Start/Stop Ollama Server */}
-        <div className="mb-4 flex space-x-4">
-          <button
-            onClick={startOllama}
-            className="bg-green-500/70 hover:bg-green-500/80 transition duration-300 text-white font-bold py-2 px-4 rounded"
-          >
-            Start Ollama
-          </button>
-          <button
-            onClick={stopOllama}
-            className="bg-red-500/70 hover:bg-red-500/80 transition duration-300 text-white font-bold py-2 px-4 rounded"
-          >
-            Stop Ollama
-          </button>
-        </div>
-
-        {/* List Available Models */}
-        <div className="mb-4">
-          <h2 className="text-xl font-bold text-white mb-2">Available Models</h2>
-          <ul className="flex flex-col gap-3 h-2/3 relative overflow-y-scroll list-inside text-white">
-            {models.length > 0 ? (
-              models.map((model, index) => (
-                <li key={index}>- {model.name}</li>
-              ))
-            ) : (
-              <div>No models available</div>
-            )}
-            <div className="flex justify-start relative bottom-0 gap-2 transition">
-              <button className="px-4 bg-zinc-900/60 rounded-lg py-2" onClick={fetchModels}>Refresh</button>
-              <button className="px-4 bg-zinc-900/60 rounded-lg py-2 ">+</button>
+        {/* Tab Content */}
+        <div>
+          {activeTab === 'general' && (
+            <div>
+              <h2 className="text-xl font-bold text-white mb-2">General Settings</h2>
+              {/* Add general settings here */}
+              <p className="text-white">General settings content goes here.</p>
             </div>
-          </ul>
+          )}
+
+          {activeTab === 'ollama' && (
+            <div>
+              {/* Ollama Server Status */}
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-white mb-2">Ollama Server Status</h2>
+                <p className={`text-lg ${isOllamaRunning ? 'text-green-200' : 'text-red-300'}`}>
+                  {isOllamaRunning ? 'Running' : 'Not Running'}
+                </p>
+              </div>
+
+              {/* Start/Stop Ollama Server */}
+              <div className="mb-4 flex space-x-4">
+                <button
+                  onClick={startOllama}
+                  className="bg-green-500/70 hover:bg-green-500/80 transition duration-300 text-white font-bold py-2 px-4 rounded"
+                >
+                  Start Ollama
+                </button>
+                <button
+                  onClick={stopOllama}
+                  className="bg-red-500/70 hover:bg-red-500/80 transition duration-300 text-white font-bold py-2 px-4 rounded"
+                >
+                  Stop Ollama
+                </button>
+              </div>
+
+              {/* List Available Models */}
+              <div className="mb-4">
+                <h2 className="text-xl font-bold text-white mb-2">Available Models</h2>
+                <ul className="flex flex-col gap-3 h-48 overflow-y-scroll list-inside text-white">
+                  {models.length > 0 ? (
+                    models.map((model, index) => (
+                      <li key={index}>- {model.name}</li>
+                    ))
+                  ) : (
+                    <div>No models available</div>
+                  )}
+                </ul>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'config' && (
+            <div>
+              <h2 className="text-xl font-bold text-white mb-2">Configuration</h2>
+              <div className="mb-4">
+                <label className="block text-white mb-2">API Key:</label>
+                <input
+                  type="text"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder="API KEY"
+                  className="w-full px-3 py-2 rounded-lg bg-zinc-800/60 outline-none text-white"
+                />
+                <button
+                  onClick={saveApiKey}
+                  className="mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+                >
+                  Save API Key
+                </button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'performance' && (
+            <div>
+              <h2 className="text-xl font-bold text-white mb-2">Performance Metrics</h2>
+              {/* Add performance metrics here */}
+              <p className="text-white">Performance metrics content goes here.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
